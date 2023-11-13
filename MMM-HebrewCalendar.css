@@ -1,0 +1,82 @@
+.MMM-HebrewCalendar .wrapper {
+  width: 100%;
+  table-layout: fixed;
+  direction: rtl;  
+  background-color: white;
+  border-spacing:5px;
+  background-image: url("flower-background.jpg");
+  background-size: cover;
+  color: black;
+}
+
+.MMM-HebrewCalendar .header {
+  text-align: center;
+}
+
+
+.MMM-HebrewCalendar .cell {
+  height: 110px;
+  text-align: center;
+  vertical-align: top;
+  background-color: rgba(255, 250, 250, 0.818);
+  color:  black;
+  border-radius: 15px;
+  padding: 2px;
+  box-shadow: 1px 1px rgb(171, 171, 171);
+}
+
+.MMM-HebrewCalendar .cell-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 10px;
+  font-weight: bold;
+}
+
+.MMM-HebrewCalendar .today {
+  box-shadow: 0px 0px 13px  goldenrod
+}
+
+.MMM-HebrewCalendar .shabbat {
+  /* background-color: rgb(201, 243, 251); */
+  box-shadow: 3px 3px rgb(202, 189, 165);
+ background-color: rgba(251, 215, 192, 0.818);
+}
+
+
+.MMM-HebrewCalendar .event-line {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 1px;
+  font-size: 0.9em;
+}
+
+.MMM-HebrewCalendar .event-text {
+  text-align: left;
+} 
+/* 
+.MMM-HebrewCalendar .event {
+  text-align: right;
+  margin-bottom: 1px;
+  border-radius: 4px;
+  color: black;
+} */
+
+.MMM-HebrewCalendar .event-full-day {
+  background-color: goldenrod;
+  color: white;
+  text-align: center;
+}
+
+.MMM-HebrewCalendar .event-nowrap {
+  white-space: nowrap;
+  overflow-x: hidden;
+}
+
+.MMM-HebrewCalendar .other-month {
+  filter: brightness(45%);
+}
+
+.MMM-HebrewCalendar .past-date {
+  filter: brightness(97%);
+}
+
