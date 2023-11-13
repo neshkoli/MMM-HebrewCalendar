@@ -12,7 +12,7 @@ cd ~/MagicMirror/modules
 
 Clone this repository:
 ````
-git clone https://github.com/kolbyjack/MMM-HebrewCalendar.git
+git clone https://github.com/neshkoli/MMM-HebrewCalendar.git
 ````
 
 Configure the module in your `config.js` file.
