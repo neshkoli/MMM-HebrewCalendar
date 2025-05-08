@@ -52,13 +52,6 @@
 .MMM-HebrewCalendar .event-text {
   text-align: left;
 } 
-/* 
-.MMM-HebrewCalendar .event {
-  text-align: right;
-  margin-bottom: 1px;
-  border-radius: 4px;
-  color: black;
-} */
 
 .MMM-HebrewCalendar .event-birthday {
   background-color: rgba(173, 216, 230, 0.7);
