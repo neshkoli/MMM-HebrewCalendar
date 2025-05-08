@@ -37,8 +37,7 @@
 }
 
 .MMM-HebrewCalendar .shabbat {
-  /* background-color: rgb(201, 243, 251); */
-  box-shadow: 3px 3px rgb(202, 189, 165);
+ box-shadow: 3px 3px rgb(202, 189, 165);
  background-color: rgba(251, 215, 192, 0.818);
 }
 
@@ -60,6 +59,14 @@
   border-radius: 4px;
   color: black;
 } */
+
+.MMM-HebrewCalendar .event-birthday {
+  background-color: rgba(173, 216, 230, 0.7);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-bottom: 2px;
+  color: #333;
+}
 
 .MMM-HebrewCalendar .event-full-day {
   background-color: goldenrod;

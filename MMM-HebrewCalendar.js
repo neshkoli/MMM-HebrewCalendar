@@ -1,40 +1,89 @@
 // MMM-HebrewCalendar.js
 
-
+/**
+ * Creates a DOM element with the given tag and options
+ * @param {string} tag - HTML tag name
+ * @param {Object} options - Element properties and attributes
+ * @returns {HTMLElement} The created element
+ */
 function el(tag, options) {
-	var result = document.createElement(tag);
+	const result = document.createElement(tag);
 	options = options || {};
-	for (var key in options) {
-		result[key] = options[key];
+	
+	for (const key in options) {
+		if (key === 'className' || key === 'innerHTML' || key === 'id') {
+			result[key] = options[key];
+		} else {
+			result.setAttribute(key, options[key]);
+		}
 	}
 	return result;
 }
 
+/**
+ * Adds one day to the given date
+ * @param {Date} d - Date to increment
+ * @returns {Date} New date object representing the next day
+ */
 function addOneDay(d) {
-	return new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1, d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds());
+	const newDate = new Date(d);
+	newDate.setDate(newDate.getDate() + 1);
+	return newDate;
 }
 
+/**
+ * Calculates the difference in days between two dates
+ * @param {Date} a - First date
+ * @param {Date} b - Second date
+ * @returns {number} Number of days between dates
+ */
 function diffDays(a, b) {
-	a = new Date(a);
-	b = new Date(b);
+	const dateA = new Date(a);
+	const dateB = new Date(b);
 
-	a.setHours(0,0,0,0);
-	b.setHours(0,0,0,0);
+	dateA.setHours(0, 0, 0, 0);
+	dateB.setHours(0, 0, 0, 0);
 
-	return Math.round((a.getTime() - b.getTime()) / (24 * 60 * 60 * 1000)) + 1;
+	return Math.round((dateA - dateB) / (24 * 60 * 60 * 1000)) + 1;
 }
 
+/**
+ * Helper function for Hebrew calendar formatting
+ * @param {Date} date - Date to format
+ * @param {string} part - Part of date to return ("year", "month", or "day")
+ * @param {string} locale - Locale to use (default: "he")
+ * @returns {string} Formatted Hebrew date part
+ */
+function getHebrewDatePart(date, part, locale = "he") {
+	return new Intl.DateTimeFormat(`${locale}-u-ca-hebrew`, { [part]: part === "month" ? "numeric" : "numeric" }).format(date);
+}
+
+/**
+ * Gets the Hebrew year for a given date
+ * @param {Date} date - Date to get Hebrew year for
+ * @returns {string} Hebrew year
+ */
 function getHebYear(date) {
-	return new Intl.DateTimeFormat("en-u-ca-hebrew", { year: "numeric" }).format(date);
+	return getHebrewDatePart(date, "year", "en");
 }
 
+/**
+ * Gets the Hebrew month for a given date
+ * @param {Date} date - Date to get Hebrew month for
+ * @returns {string} Hebrew month
+ */
 function getHebMonth(date) {
-	return new Intl.DateTimeFormat("he-u-ca-hebrew", { month: "numeric" }).format(date);
+	const month = getHebrewDatePart(date, "month", "he");
+	return month;
 }
 
+/**
+ * Gets the Hebrew day for a given date
+ * @param {Date} date - Date to get Hebrew day for
+ * @returns {string} Hebrew day
+ */
 function getHebDay(date) {
-	const hday = new Intl.DateTimeFormat("en-u-ca-hebrew", { day: "numeric" }).format(date);
-	return hday;
+	return getHebrewDatePart(date, "day", "he");
 }
 
 function equals(a, b) {
@@ -43,7 +92,7 @@ function equals(a, b) {
 	}
 
 	if (!!a && (a.constructor === Array || a.constructor === Object)) {
-		for (var key in a) {
+		for (const key in a) {
 			if (!b.hasOwnProperty(key) || !equals(a[key], b[key])) {
 				return false;
 			}
@@ -74,8 +123,28 @@ Module.register("MMM-HebrewCalendar", {
 		hideCalendars: []
 	},
 
+	// Hebrew date events data structure
+	hebrewEvents: {},
+
+	/**
+	 * Adds an event to the Hebrew calendar
+	 * @param {number} month - Hebrew month (1-13)
+	 * @param {number} day - Hebrew day (1-30)
+	 * @param {string} text - Event description
+	 * @param {string} type - Event type (e.g., "birthday")
+	 */
+	addHebrewEvent: function (month, day, text, type) {
+		if (!this.hebrewEvents[month]) {
+			this.hebrewEvents[month] = {};
+		}
+		if (!this.hebrewEvents[month][day]) {
+			this.hebrewEvents[month][day] = [];
+		}
+		this.hebrewEvents[month][day].push({ text, type });
+	},
+
 	start: function () {
-		var self = this;
+		const self = this;
 
 		self.sourceEvents = {};
 		self.events = [];
@@ -83,10 +152,26 @@ Module.register("MMM-HebrewCalendar", {
 		self.displayedEvents = [];
 		self.updateTimer = null;
 		self.skippedUpdateCount = 0;
+
+		console.log("MMM-HebrewCalendar module started.");
+
+		// Example: Add a birthday event on Iyar 10
+		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 1, day: 10, text: "1 Birthday", type: "birthday" });
+		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 2, day: 10, text: "2 Birthday", type: "birthday" });
+		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 3, day: 10, text: "3 Birthday", type: "birthday" });
+		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 4, day: 10, text: "4 Birthday", type: "birthday" });
+		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 5, day: 10, text: "5 Birthday", type: "birthday" });
+		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 6, day: 10, text: "6 Birthday", type: "birthday" });
+		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 7, day: 10, text: "7 Birthday", type: "birthday" });
+		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 8, day: 10, text: "8 Birthday", type: "birthday" });
+		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 9, day: 10, text: "9 Birthday", type: "birthday" });
+		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 10, day: 10, text: "10 Birthday", type: "birthday" });
+		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 11, day: 10, text: "11 Birthday", type: "birthday" });
+		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 12, day: 10, text: "12 Birthday", type: "birthday" });
 	},
 
 	notificationReceived: function (notification, payload, sender) {
-		var self = this;
+		const self = this;
 
 		if (notification === "CALENDAR_EVENTS") {
 			self.sourceEvents[sender.identifier] = payload
@@ -114,7 +199,7 @@ Module.register("MMM-HebrewCalendar", {
 			}
 
 			self.updateTimer = setTimeout(() => {
-				var today = new Date().setHours(12, 0, 0, 0).valueOf();
+				const today = new Date().setHours(12, 0, 0, 0).valueOf();
 
 				self.events = Object.values(self.sourceEvents)
 					.reduce((acc, cur) => acc.concat(cur), [])
@@ -138,22 +223,37 @@ Module.register("MMM-HebrewCalendar", {
 	},
 
 	getDom: function () {
-		const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-		const hebDayArray = [
-			"", "א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ֿז׳", "ח׳", "ט׳", "י׳", 'י"א', 'י"ב', 'י"ג', 'י"ד', 'ט"ו', 'ט"ז',
-			'י"ז', 'י"ח', 'י"ט', "כ׳", 'כ"א', 'כ"ב', 'כ"ג', 'כ"ד', 'כ"ה', 'כ"ו', 'כ"ז', 'כ"ח', 'כ"ט', "ל׳"];
-		const weeksToMonthDays = { nextoneweek: 0, currentweek: 0, oneweek: 0, twoweeks: 7, threeweeks: 14, fourweeks: 21, nextfourweeks: 21 };
 		const self = this;
 		const now = new Date();
 		const table = el("table", { className: "small wrapper" });
-		const today = now.getDate();
-		const mode = self.config.mode.toLowerCase();
-		let firstDayOfWeek = self.config.firstDayOfWeek.toLowerCase();
-		var row = el("tr");
-		var cell;
-		var cellIndex, monthDays;
-		var dateCells = [];
-		var startDayOffset = 0;
+
+		const days = this.getDaysOfWeek();
+		const hebDayArray = this.getHebDayArray();
+		const dateCells = [];
+		let cellIndex = this.calculateStartCellIndex(now, days);
+		const monthDays = this.calculateMonthDays(now, cellIndex);
+
+		this.addTableHeaders(table, days, cellIndex, now);
+		this.addTableRows(table, dateCells, cellIndex, monthDays, now, hebDayArray);
+
+		this.addCalendarEvents(dateCells, now);
+		return table;
+	},
+
+	getDaysOfWeek: function () {
+		return ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+	},
+
+	getHebDayArray: function () {
+		return [
+			"", "א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ֿז׳", "ח׳", "ט׳", "י׳", 'י"א', 'י"ב', 'י"ג', 'י"ד', 'ט"ו', 'ט"ז',
+			'י"ז', 'י"ח', 'י"ט', "כ׳", 'כ"א', 'כ"ב', 'כ"ג', 'כ"ד', 'כ"ה', 'כ"ו', 'כ"ז', 'כ"ח', 'כ"ט', "ל׳"
+		];
+	},
+
+	calculateStartCellIndex: function (now, days) {
+		let firstDayOfWeek = this.config.firstDayOfWeek.toLowerCase();
+		let startDayOffset = 0;
 
 		if (firstDayOfWeek === "today") {
 			firstDayOfWeek = days[now.getDay()].toLowerCase();
@@ -165,110 +265,145 @@ Module.register("MMM-HebrewCalendar", {
 		}
 
 		startDayOffset = startDayOffset % 7;
+		return now.getDate() - now.getDay() + startDayOffset;
+	},
+
+	calculateMonthDays: function (now, cellIndex) {
+		const mode = this.config.mode.toLowerCase();
+		const weeksToMonthDays = { nextoneweek: 0, currentweek: 0, oneweek: 0, twoweeks: 7, threeweeks: 14, fourweeks: 21, nextfourweeks: 21 };
 
 		if (mode in weeksToMonthDays) {
-			cellIndex = today - now.getDay() + startDayOffset;
-			while (cellIndex > today) {
+			while (cellIndex > now.getDate()) {
 				cellIndex -= 7;
 			}
-			monthDays = cellIndex + weeksToMonthDays[mode];
+			return cellIndex + weeksToMonthDays[mode];
 		} else {
 			if (mode === "lastmonth") {
 				now.setMonth(now.getMonth() - 1);
 			} else if (mode === "nextmonth") {
 				now.setMonth(now.getMonth() + 1);
 			}
-			cellIndex = 1 - new Date(now.getFullYear(), now.getMonth(), 1).getDay() + startDayOffset;
-			monthDays = 32 - new Date(now.getFullYear(), now.getMonth(), 32).getDate();
-			while (cellIndex > 1) {
-				cellIndex -= 7;
-			}
+			cellIndex = 1 - new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+			return 32 - new Date(now.getFullYear(), now.getMonth(), 32).getDate();
 		}
+	},
 
-		for (var day = 0; day < 7; ++day) {
+	addTableHeaders: function (table, days, cellIndex, now) {
+		const row = el("tr");
+		for (let day = 0; day < 7; ++day) {
 			const headerDate = new Date(now.getFullYear(), now.getMonth(), cellIndex + day);
 			row.appendChild(el("th", { className: "header", innerHTML: headerDate.toLocaleString(config.language, { weekday: "long" }) }));
 		}
 		table.appendChild(row);
+	},
 
-		for (var week = 0; week < 6 && cellIndex <= monthDays; ++week) {
-			row = el("tr", { className: "small" });
+	addTableRows: function (table, dateCells, cellIndex, monthDays, now, hebDayArray) {
+		for (let week = 0; week < 6 && cellIndex <= monthDays; ++week) {
+			const row = el("tr", { className: "small" });
 
-			for (day = 0; day < 7; ++day, ++cellIndex) {
-				var cellDate = new Date(now.getFullYear(), now.getMonth(), cellIndex);
-				var hebDay = getHebDay(cellDate);
-				var hebMonth = getHebMonth(cellDate);
-				var cellDay = cellDate.getDate();
+			for (let day = 0; day < 7; ++day, ++cellIndex) {
+				const cellDate = new Date(now.getFullYear(), now.getMonth(), cellIndex);
+				const hebDay = parseInt(getHebDay(cellDate));
+				const hebMonth = getHebMonth(cellDate);
+				let cellDay = cellDate.getDate();
 
-				cell = el("td", { className: "cell" });
-				if (["lastmonth", "nextmonth"].includes(mode)) {
-					// Do nothing
-				} else if (day === 6) {
-					cell.classList.add("shabbat");
-				} else if (cellIndex === today) {
-					cell.classList.add("today");
-				} else if (cellIndex !== cellDay && mode === "currentmonth") {
-					cell.classList.add("other-month");
-				} else if (cellIndex < today) {
-					cell.classList.add("past-date");
-				}
+				const cell = el("td", { className: "cell" });
+				this.styleCell(cell, cellIndex, cellDay, day, now);
 
 				if ((week === 0 && day === 0) || cellDay === 1) {
 					cellDay = cellDate.toLocaleString(config.language, { month: "short", day: "numeric" });
 				}
-				const cellHeader = el("div", { className: "cell-header" });
-				const hebHeader = parseInt(hebDay) === 1 ? el("div", { className: "heb-header", innerHTML: hebDayArray[hebDay] + " " + hebMonth }) : el("div", { className: "heb-header", innerHTML: hebDayArray[hebDay] });
-				const dateHeader = el("div", { className: "date-header", innerHTML: cellDay });
-				cellHeader.appendChild(hebHeader);
-				cellHeader.appendChild(dateHeader);
-				cell.appendChild(cellHeader);
+				this.addCellHeader(cell, hebDay, hebMonth, cellDay, hebDayArray);
+
+				// Add Hebrew events to the calendar
+				if (this.hebrewEvents[hebMonth] && this.hebrewEvents[hebMonth][hebDay]) {
+					this.hebrewEvents[hebMonth][hebDay].forEach((event) => {
+						const eventDiv = el("div", { className: `event event-${event.type}`, innerHTML: event.text });
+						cell.appendChild(eventDiv);
+					});
+				}
+
 				row.appendChild(cell);
 				dateCells[cellIndex] = cell;
 			}
 			table.appendChild(row);
 		}
+	},
 
-		var monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-		for (var i in self.events) {
-			var e = self.events[i];
+	styleCell: function (cell, cellIndex, cellDay, day, now) {
+		const mode = this.config.mode.toLowerCase();
+		const today = now.getDate();
+
+		if (["lastmonth", "nextmonth"].includes(mode)) {
+			// Do nothing
+		} else if (day === 6) {
+			cell.classList.add("shabbat");
+		} else if (cellIndex === today) {
+			cell.classList.add("today");
+		} else if (cellIndex !== cellDay && mode === "currentmonth") {
+			cell.classList.add("other-month");
+		} else if (cellIndex < today) {
+			cell.classList.add("past-date");
+		}
+	},
+
+	addCellHeader: function (cell, hebDay, hebMonth, cellDay, hebDayArray) {
+		const cellHeader = el("div", { className: "cell-header" });
+		const hebHeader = parseInt(hebDay) === 1
+			? el("div", { className: "heb-header", innerHTML: hebDayArray[hebDay] + " " + hebMonth })
+			: el("div", { className: "heb-header", innerHTML: hebDayArray[hebDay] });
+		const dateHeader = el("div", { className: "date-header", innerHTML: cellDay });
+		cellHeader.appendChild(hebHeader);
+		cellHeader.appendChild(dateHeader);
+		cell.appendChild(cellHeader);
+	},
+
+	addCalendarEvents: function (dateCells, now) {
+		const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+		for (const i in this.events) {
+			const e = this.events[i];
 			for (
-				var eventDate = e.startDate;
+				let eventDate = e.startDate;
 				eventDate <= e.endDate;
 				eventDate = addOneDay(eventDate)
 			) {
-				var dayDiff = diffDays(eventDate, monthStart);
+				const dayDiff = diffDays(eventDate, monthStart);
 				if (dayDiff in dateCells) {
-					let div = el("div", { className: "event" });
-					if (!self.config.wrapTitles) {
+					const div = el("div", { className: "event" });
+					if (!this.config.wrapTitles) {
 						div.classList.add("event-nowrap");
 					}
 					if (!e.fullDayEvent) {
-						function formatTime(d) {
-							var h = d.getHours();
-							var m = d.getMinutes().toString().padStart(2, "0");
-							if (config.timeFormat === 12) {
-								return ((h % 12 || 12) + (m > 0 ? `:${m}` : "") + (h < 12 ? "am" : "pm"));
-							} else {
-								return `${h}:${m}`;
-							}
-						}
-						var eventLine = el("div", { className: "event-line" });
-						eventLine.appendChild(el("div", { className: "event-label", innerHTML: formatTime(e.startDate) }));
-						eventLine.appendChild(el("div", { className: "event-text", innerHTML: e.title }));
-						div.appendChild(eventLine);
+						this.addEventLine(div, e);
 					} else {
 						div.appendChild(el("div", { className: "event-full-day", innerHTML: e.title }));
 					}
 
-					if (self.config.displaySymbol) {
-						for (let symbol of e.symbol) {
+					if (this.config.displaySymbol) {
+						for (const symbol of e.symbol) {
 							div.appendChild(el("div", { className: `fa fa-${symbol}` }));
-						}	
+						}
 					}
 					dateCells[dayDiff].appendChild(div);
 				}
 			}
 		}
-		return table;
+	},
+
+	addEventLine: function (div, event) {
+		const eventLine = el("div", { className: "event-line" });
+		eventLine.appendChild(el("div", { className: "event-label", innerHTML: this.formatTime(event.startDate) }));
+		eventLine.appendChild(el("div", { className: "event-text", innerHTML: event.title }));
+		div.appendChild(eventLine);
+	},
+
+	formatTime: function (date) {
+		const h = date.getHours();
+		const m = date.getMinutes().toString().padStart(2, "0");
+		if (config.timeFormat === 12) {
+			return ((h % 12 || 12) + (m > 0 ? `:${m}` : "") + (h < 12 ? "am" : "pm"));
+		} else {
+			return `${h}:${m}`;
+		}
 	}
 });
