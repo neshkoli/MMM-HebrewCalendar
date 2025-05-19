@@ -55,7 +55,7 @@ function diffDays(a, b) {
  * @returns {string} Formatted Hebrew date part
  */
 function getHebrewDatePart(date, part, locale = "he") {
-	return new Intl.DateTimeFormat(`${locale}-u-ca-hebrew`, { [part]: part === "month" ? "numeric" : "numeric" }).format(date);
+	return new Intl.DateTimeFormat(`${locale}-u-ca-hebrew`, { [part]: part === "month" ? "long" : "numeric" }).format(date);
 }
 
 /**
@@ -120,7 +120,8 @@ Module.register("MMM-HebrewCalendar", {
 		firstDayOfWeek: "sunday",
 		displaySymbol: false,
 		wrapTitles: true,
-		hideCalendars: []
+		hideCalendars: [],
+		hebrewBirthdays: [],
 	},
 
 	// Hebrew date events data structure
@@ -155,19 +156,6 @@ Module.register("MMM-HebrewCalendar", {
 
 		console.log("MMM-HebrewCalendar module started.");
 
-		// Example: Add a birthday event on Iyar 10
-		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 1, day: 10, text: "1 Birthday", type: "birthday" });
-		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 2, day: 10, text: "2 Birthday", type: "birthday" });
-		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 3, day: 10, text: "3 Birthday", type: "birthday" });
-		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 4, day: 10, text: "4 Birthday", type: "birthday" });
-		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 5, day: 10, text: "5 Birthday", type: "birthday" });
-		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 6, day: 10, text: "6 Birthday", type: "birthday" });
-		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 7, day: 10, text: "7 Birthday", type: "birthday" });
-		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 8, day: 10, text: "8 Birthday", type: "birthday" });
-		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 9, day: 10, text: "9 Birthday", type: "birthday" });
-		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 10, day: 10, text: "10 Birthday", type: "birthday" });
-		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 11, day: 10, text: "11 Birthday", type: "birthday" });
-		self.sendSocketNotification("ADD_HEBREW_EVENT", { month: 12, day: 10, text: "12 Birthday", type: "birthday" });
 	},
 
 	notificationReceived: function (notification, payload, sender) {
@@ -303,8 +291,10 @@ Module.register("MMM-HebrewCalendar", {
 
 			for (let day = 0; day < 7; ++day, ++cellIndex) {
 				const cellDate = new Date(now.getFullYear(), now.getMonth(), cellIndex);
-				const hebDay = parseInt(getHebDay(cellDate));
-				const hebMonth = getHebMonth(cellDate);
+				const hebDayStr = getHebDay(cellDate);
+				const hebDay = parseInt(hebDayStr);
+				const hebMonthName = getHebMonth(cellDate);
+				const hebMonthNumeric = parseInt(getHebrewDatePart(cellDate, "month", "en"));
 				let cellDay = cellDate.getDate();
 
 				const cell = el("td", { className: "cell" });
@@ -313,13 +303,25 @@ Module.register("MMM-HebrewCalendar", {
 				if ((week === 0 && day === 0) || cellDay === 1) {
 					cellDay = cellDate.toLocaleString(config.language, { month: "short", day: "numeric" });
 				}
-				this.addCellHeader(cell, hebDay, hebMonth, cellDay, hebDayArray);
+				this.addCellHeader(cell, hebDay, hebMonthName, cellDay, hebDayArray);
 
-				// Add Hebrew events to the calendar
-				if (this.hebrewEvents[hebMonth] && this.hebrewEvents[hebMonth][hebDay]) {
-					this.hebrewEvents[hebMonth][hebDay].forEach((event) => {
+				if (this.config.hebrewBirthdays && this.config.hebrewBirthdays.length > 0) {
+					this.config.hebrewBirthdays.forEach(birthday => {
+						if (birthday.hebrewMonth === hebMonthName && birthday.hebrewDay === hebDay) {
+							if (!this.hebrewEvents[hebMonthNumeric] || !this.hebrewEvents[hebMonthNumeric][hebDay] || !this.hebrewEvents[hebMonthNumeric][hebDay].some(event => event.text === "🎂 " + birthday.name)) {
+								this.addHebrewEvent(hebMonthNumeric, hebDay, "🎂 " + birthday.name , "birthday");
+							}
+						}
+					});
+				}
+
+				const eventsContainer = el("div", { className: "events-container" });
+				cell.appendChild(eventsContainer);
+
+				if (this.hebrewEvents[hebMonthNumeric] && this.hebrewEvents[hebMonthNumeric][hebDay]) {
+					this.hebrewEvents[hebMonthNumeric][hebDay].forEach((event) => {
 						const eventDiv = el("div", { className: `event event-${event.type}`, innerHTML: event.text });
-						cell.appendChild(eventDiv);
+						eventsContainer.appendChild(eventDiv);
 					});
 				}
 
