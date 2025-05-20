@@ -61,6 +61,30 @@
   color: #333;
 }
 
+.MMM-HebrewCalendar .event-anniversary {
+  background-color: rgba(64, 186, 247, 0.7);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-bottom: 2px;
+  color: #333;
+}
+
+.MMM-HebrewCalendar .event-memorial {
+  background-color: rgba(80, 80, 80, 0.7);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-bottom: 2px;
+  color: #fff;
+}
+
+.MMM-HebrewCalendar .event-other {
+  background-color: rgba(255, 215, 0, 0.7);
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-bottom: 2px;
+  color: #333;
+}
+
 .MMM-HebrewCalendar .event-full-day {
   background-color: goldenrod;
   color: white;

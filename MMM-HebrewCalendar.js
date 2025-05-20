@@ -121,7 +121,7 @@ Module.register("MMM-HebrewCalendar", {
 		displaySymbol: false,
 		wrapTitles: true,
 		hideCalendars: [],
-		hebrewBirthdays: [],
+		hebrewEvents: [], // <-- changed from hebrewBirthdays
 	},
 
 	// Hebrew date events data structure
@@ -286,40 +286,67 @@ Module.register("MMM-HebrewCalendar", {
 	},
 
 	addTableRows: function (table, dateCells, cellIndex, monthDays, now, hebDayArray) {
+		const self = this;
+
+		// Reset hebrewEvents at the start of rendering to avoid stale/duplicate data
+		self.hebrewEvents = {};
+
+		// Only add hebrewEvents if present in config
+		if (self.config.hebrewEvents && self.config.hebrewEvents.length > 0) {
+			self.config.hebrewEvents.forEach(function(event) {
+				// For each event, find all matching days in the current month view
+				for (let d = 1; d <= monthDays; ++d) {
+					const cellDate = new Date(now.getFullYear(), now.getMonth(), d);
+					const hebDayStr = getHebrewDatePart(cellDate, "day", "en"); // Use "en" for parseInt
+					const hebDay = parseInt(hebDayStr);
+					const hebMonthName = getHebMonth(cellDate);
+					const hebMonthNumeric = Number(new Intl.DateTimeFormat("en-u-ca-hebrew", { month: "numeric" }).format(cellDate));
+					// Fix: skip invalid hebDay (NaN) and skip days outside valid range
+					if (
+						!isNaN(hebDay) &&
+						hebDay > 0 &&
+						String(event.hebrewMonth).trim() === String(hebMonthName).trim() &&
+						Number(event.hebrewDay) === Number(hebDay)
+					) {
+						const type = event.type || "other";
+						const emojiMap = {
+							birthday: "🎂",
+							anniversary: "💍",
+							memorial: "🕯️",
+							other: "⭐"
+						};
+						const emoji = emojiMap[type] || "⭐";
+						const eventText = `${emoji} ${event.name}`;
+						self.addHebrewEvent(hebMonthNumeric, hebDay, eventText, type);
+					}
+				}
+			});
+		}
+
 		for (let week = 0; week < 6 && cellIndex <= monthDays; ++week) {
 			const row = el("tr", { className: "small" });
 
 			for (let day = 0; day < 7; ++day, ++cellIndex) {
 				const cellDate = new Date(now.getFullYear(), now.getMonth(), cellIndex);
-				const hebDayStr = getHebDay(cellDate);
+				const hebDayStr = getHebrewDatePart(cellDate, "day", "en"); // Use "en" for parseInt
 				const hebDay = parseInt(hebDayStr);
 				const hebMonthName = getHebMonth(cellDate);
-				const hebMonthNumeric = parseInt(getHebrewDatePart(cellDate, "month", "en"));
+				const hebMonthNumeric = Number(new Intl.DateTimeFormat("en-u-ca-hebrew", { month: "numeric" }).format(cellDate));
 				let cellDay = cellDate.getDate();
 
 				const cell = el("td", { className: "cell" });
-				this.styleCell(cell, cellIndex, cellDay, day, now);
+				self.styleCell(cell, cellIndex, cellDay, day, now);
 
 				if ((week === 0 && day === 0) || cellDay === 1) {
 					cellDay = cellDate.toLocaleString(config.language, { month: "short", day: "numeric" });
 				}
-				this.addCellHeader(cell, hebDay, hebMonthName, cellDay, hebDayArray);
-
-				if (this.config.hebrewBirthdays && this.config.hebrewBirthdays.length > 0) {
-					this.config.hebrewBirthdays.forEach(birthday => {
-						if (birthday.hebrewMonth === hebMonthName && birthday.hebrewDay === hebDay) {
-							if (!this.hebrewEvents[hebMonthNumeric] || !this.hebrewEvents[hebMonthNumeric][hebDay] || !this.hebrewEvents[hebMonthNumeric][hebDay].some(event => event.text === "🎂 " + birthday.name)) {
-								this.addHebrewEvent(hebMonthNumeric, hebDay, "🎂 " + birthday.name , "birthday");
-							}
-						}
-					});
-				}
+				self.addCellHeader(cell, hebDay, hebMonthName, cellDay, hebDayArray);
 
 				const eventsContainer = el("div", { className: "events-container" });
 				cell.appendChild(eventsContainer);
 
-				if (this.hebrewEvents[hebMonthNumeric] && this.hebrewEvents[hebMonthNumeric][hebDay]) {
-					this.hebrewEvents[hebMonthNumeric][hebDay].forEach((event) => {
+				if (self.hebrewEvents[hebMonthNumeric] && self.hebrewEvents[hebMonthNumeric][hebDay]) {
+					self.hebrewEvents[hebMonthNumeric][hebDay].forEach(function(event) {
 						const eventDiv = el("div", { className: `event event-${event.type}`, innerHTML: event.text });
 						eventsContainer.appendChild(eventDiv);
 					});
@@ -371,6 +398,7 @@ Module.register("MMM-HebrewCalendar", {
 			) {
 				const dayDiff = diffDays(eventDate, monthStart);
 				if (dayDiff in dateCells) {
+					// console.log("Adding calendar event to cell:", dayDiff, e);
 					const div = el("div", { className: "event" });
 					if (!this.config.wrapTitles) {
 						div.classList.add("event-nowrap");

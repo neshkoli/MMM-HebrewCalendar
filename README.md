@@ -30,9 +30,12 @@ modules: [
     position: "bottom_bar",
     config: { // See "Configuration options" below.
       mode: "fourWeeks",
-      // Optional: Add Hebrew birthdays
-      hebrewBirthdays: [
-        { name: "David", hebrewMonth: "ניסן", hebrewDay: 5 }
+      // Optional: Add Hebrew annual events
+      hebrewEvents: [
+        { name: "David", hebrewMonth: "ניסן", hebrewDay: 5, type: "birthday" },
+        { name: "Wedding", hebrewMonth: "אייר", hebrewDay: 12, type: "anniversary" },
+        { name: "Grandpa", hebrewMonth: "תמוז", hebrewDay: 20, type: "memorial" },
+        { name: "Special Day", hebrewMonth: "טבת", hebrewDay: 10, type: "other" }
       ]
     }
   }
@@ -50,17 +53,25 @@ You may also want to set `"broadcastPastEvents": true` in your [calendar module 
 | `firstDayOfWeek`    | `"sunday"`        | Start of the week: `"sunday"`, `"monday"`, or `"today"` (current day in first column).           |
 | `hideCalendars`     | `[]`              | List of calendar names to hide from the view.                                                    |
 | `wrapTitles`        | `true`            | Allow event titles to wrap or truncate.                                                          |
-| `hebrewBirthdays`   | `[]`              | Array of objects: `{ name: "Name", hebrewMonth: "MonthName", hebrewDay: DayNumber }`             |
+| `hebrewEvents`      | `[]`              | Array of objects: `{ name: "Name", hebrewMonth: "MonthName", hebrewDay: DayNumber, type: "birthday"|"anniversary"|"memorial"|"other" }`             |
 
-### Hebrew Birthdays
+### Hebrew Annual Events
 
-You can display recurring Hebrew birthdays by adding them to the `hebrewBirthdays` array in your config.  
+You can display recurring Hebrew annual events (birthdays, anniversaries, memorials, or other) by adding them to the `hebrewEvents` array in your config.  
+Supported types and their emojis:
+- `birthday`: 🎂
+- `anniversary`: 💍
+- `memorial`: 🕯️
+- `other`: ⭐
+
 Example:
 
 ```javascript
-hebrewBirthdays: [
-  { name: "David", hebrewMonth: "ניסן", hebrewDay: 5 },
-  { name: "Sarah", hebrewMonth: "תשרי", hebrewDay: 12 }
+hebrewEvents: [
+  { name: "David", hebrewMonth: "ניסן", hebrewDay: 5, type: "birthday" },
+  { name: "Sarah & Eli", hebrewMonth: "תשרי", hebrewDay: 12, type: "anniversary" },
+  { name: "Grandma", hebrewMonth: "אדר", hebrewDay: 18, type: "memorial" },
+  { name: "Special Day", hebrewMonth: "טבת", hebrewDay: 10, type: "other" }
 ]
 ```
 
