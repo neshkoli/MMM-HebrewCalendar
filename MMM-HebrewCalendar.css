@@ -62,7 +62,7 @@
 }
 
 .MMM-HebrewCalendar .event-anniversary {
-  background-color: rgba(64, 186, 247, 0.7);
+  background-color: rgb(251, 125, 184);
   border-radius: 4px;
   padding: 2px 4px;
   margin-bottom: 2px;
@@ -78,11 +78,92 @@
 }
 
 .MMM-HebrewCalendar .event-other {
-  background-color: rgba(255, 215, 0, 0.7);
+  background-color: rgba(0, 247, 255, 0.7);
   border-radius: 4px;
   padding: 2px 4px;
   margin-bottom: 2px;
   color: #333;
+}
+
+/* Jewish Holiday Styles */
+.MMM-HebrewCalendar .event-holiday-major {
+  background-color: rgba(138, 43, 226, 0.8); /* Purple for major holidays like Rosh Hashanah, Yom Kippur, Passover */
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-bottom: 2px;
+  color: #fff;
+  font-weight: bold;
+}
+
+.MMM-HebrewCalendar .event-holiday-festival {
+  background-color: rgba(30, 144, 255, 0.8); /* Blue for festivals like Shavuot, Sukkot, Chanukah */
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-bottom: 2px;
+  color: #fff;
+}
+
+.MMM-HebrewCalendar .event-holiday-minor {
+  background-color: rgba(100, 195, 249, 0.8); /* Green for minor holidays like Tu BiShvat, Lag BaOmer */
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-bottom: 2px;
+  color: #fff;
+}
+
+.MMM-HebrewCalendar .event-holiday-fast {
+  background-color: rgba(105, 105, 105, 0.8); /* Gray for fast days */
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-bottom: 2px;
+  color: #fff;
+}
+
+.MMM-HebrewCalendar .event-holiday-modern {
+  background-color: rgba(255, 69, 0, 0.8); /* Orange for modern holidays like Yom HaAtzmaut, Yom Yerushalayim */
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-bottom: 2px;
+  color: #fff;
+}
+
+.MMM-HebrewCalendar .event-holiday-rosh-chodesh {
+  background-color: rgba(218, 32, 212, 0.8); /* Gold for Rosh Chodesh */
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-bottom: 2px;
+  color: #333;
+}
+
+/* PARASHA (Torah portion) Styles */
+.MMM-HebrewCalendar .event-parasha {
+  background-color: rgb(255, 244, 190); /* White background for Torah portions */
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-bottom: 2px;
+  color: #333;
+  font-style: italic; /* Distinctive italic styling for PARASHA */
+}
+
+/* Candle Lighting Styles */
+.MMM-HebrewCalendar .event-candles {
+  background-color: transparent; /* No background for candle lighting */
+  /* background-color: rgb(255, 244, 190);  White background for Torah portions */
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-bottom: 2px;
+  color: #333;
+  font-weight: bold;
+}
+
+/* Havdalah Styles */
+.MMM-HebrewCalendar .event-havdalah {
+  background-color: transparent; /* No background for havdalah */
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin-bottom: 2px;
+  color: #333;
+  font-weight: bold;
 }
 
 .MMM-HebrewCalendar .event-full-day {
