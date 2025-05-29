@@ -473,7 +473,7 @@ Module.register("MMM-HebrewCalendar", {
 				
 				// Determine event type based on category from node_helper
 				const isParasha = ev.category === 'parasha';
-				const isHoliday = ev.category === 'holiday';
+				const isHoliday = ev.category === 'holiday' || ev.category === 'other'; // Treat 'other' category as holiday too
 				const isCandleLighting = ev.category === 'candles';
 				const isHavdalah = ev.category === 'havdalah';
 				

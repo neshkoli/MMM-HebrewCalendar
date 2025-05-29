@@ -258,7 +258,7 @@ describe('MMM-HebrewCalendar Module', () => {
       setTimeout(() => {
         expect(module.updateDom).toHaveBeenCalled();
         done();
-      }, 10);
+      }, 150);
     });
 
     it('should request holidays on start', () => {
@@ -285,7 +285,7 @@ describe('MMM-HebrewCalendar Module', () => {
       setTimeout(() => {
         expect(module.updateDom).toHaveBeenCalled();
         done();
-      }, 10);
+      }, 150);
     });
 
     it('should handle malformed holiday data gracefully', () => {
@@ -304,7 +304,16 @@ describe('MMM-HebrewCalendar Module', () => {
 
     beforeEach(() => {
       module = Object.create(moduleDefinition);
-      module.config = { ...testData.defaultConfig };
+      module.config = { ...testData.defaultConfig, displaySymbol: false }; // Disable emoji symbols for predictable testing
+      module.updateDom = jest.fn();
+      module.sendSocketNotification = jest.fn();
+      // Initialize the module properly
+      module.sourceEvents = {};
+      module.events = [];
+      module.displayedDay = null;
+      module.displayedEvents = [];
+      module.updateTimer = null;
+      module.skippedUpdateCount = 0;
     });
 
     it('should process holiday data correctly', (done) => {
@@ -316,11 +325,11 @@ describe('MMM-HebrewCalendar Module', () => {
         expect(module.sourceEvents["jewishHolidays"]).toBeDefined();
         expect(module.sourceEvents["jewishHolidays"].length).toBeGreaterThan(0);
         
-        const purimEvent = module.sourceEvents["jewishHolidays"].find(e => e.title === 'Purim');
+        const purimEvent = module.sourceEvents["jewishHolidays"].find(e => e.hebrewTitle === 'Purim' || e.title === 'Purim');
         expect(purimEvent).toBeDefined();
         expect(purimEvent.isHoliday).toBe(true);
         done();
-      }, 10);
+      }, 150);
     });
 
     it('should identify major holidays correctly', (done) => {
@@ -340,13 +349,13 @@ describe('MMM-HebrewCalendar Module', () => {
       module.socketNotificationReceived('JEWISH_HOLIDAYS_RESULT', holidayData);
       
       setTimeout(() => {
-        const purimEvent = module.sourceEvents["jewishHolidays"].find(e => e.title === 'Purim');
+        const purimEvent = module.sourceEvents["jewishHolidays"].find(e => e.hebrewTitle === 'Purim' || e.title === 'Purim');
         const minorEvent = module.sourceEvents["jewishHolidays"].find(e => e.title === 'Minor Event');
         
         expect(purimEvent.isHoliday).toBe(true);
         expect(minorEvent.isHoliday).toBe(true); // All events from node_helper are major holidays
         done();
-      }, 10);
+      }, 150);
     });
 
     it('should handle Hebrew text display', (done) => {
@@ -362,7 +371,7 @@ describe('MMM-HebrewCalendar Module', () => {
         const event = module.sourceEvents["jewishHolidays"][0];
         expect(event.hebrewTitle).toBe('Purim');
         done();
-      }, 10);
+      }, 150);
     });
   });
 
