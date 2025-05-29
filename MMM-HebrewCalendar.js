@@ -500,7 +500,7 @@ Module.register("MMM-HebrewCalendar", {
 					if (isParasha) {
 						event.title = `📜 ${event.title}`; // Torah scroll for PARASHA - always show
 					} else if (isCandleLighting) {
-						event.title = `🪔 ${event.title}`; // Oil lamp for candle lighting (הדלקת נרות) - always show
+						event.title = `👰‍♀️${event.title}`; // Bride for candle lighting (הדלקת נרות) - always show
 					} else if (isHavdalah) {
 						event.title = `✨ ${event.title}`; // Candle for havdalah (הבדלה) - always show
 					} else if (self.config.displaySymbol) {
