@@ -206,16 +206,26 @@ describe('MMM-HebrewCalendar Module', () => {
     it('should generate basic DOM structure', () => {
       const dom = module.getDom();
       
-      expect(dom.tagName).toBe('TABLE');
-      expect(dom.className).toContain('wrapper');
+      expect(dom.tagName).toBe('DIV');
+      expect(dom.className).toContain('mmm-hebrew-calendar-wrapper');
+      
+      // Should contain a table as a child
+      const table = dom.querySelector('table');
+      expect(table).toBeTruthy();
+      expect(table.className).toContain('wrapper');
     });
 
     it('should handle empty events gracefully', () => {
       module.events = [];
       const dom = module.getDom();
       
-      // The module should still generate a table with calendar structure
-      expect(dom.tagName).toBe('TABLE');
+      // The module should still generate a wrapper div with calendar structure
+      expect(dom.tagName).toBe('DIV');
+      expect(dom.className).toContain('mmm-hebrew-calendar-wrapper');
+      
+      // Should contain a table as a child
+      const table = dom.querySelector('table');
+      expect(table).toBeTruthy();
     });
 
     it('should display events when available', () => {
@@ -231,7 +241,43 @@ describe('MMM-HebrewCalendar Module', () => {
       
       const dom = module.getDom();
       // Check that DOM was created (events may not show in calendar view)
-      expect(dom.tagName).toBe('TABLE');
+      expect(dom.tagName).toBe('DIV');
+      expect(dom.className).toContain('mmm-hebrew-calendar-wrapper');
+      
+      // Should contain a table as a child
+      const table = dom.querySelector('table');
+      expect(table).toBeTruthy();
+    });
+
+    it('should display location name when configured', () => {
+      module.config = { 
+        ...testData.defaultConfig,
+        location: {
+          name: "Test Location",
+          latitude: 40.7128,
+          longitude: -74.0060
+        }
+      };
+      
+      const dom = module.getDom();
+      
+      // Should contain location display
+      const locationDiv = dom.querySelector('.location-display');
+      expect(locationDiv).toBeTruthy();
+      expect(locationDiv.innerHTML).toBe('Test Location');
+    });
+
+    it('should not display location when not configured', () => {
+      module.config = { 
+        ...testData.defaultConfig,
+        location: {} // No name
+      };
+      
+      const dom = module.getDom();
+      
+      // Should not contain location display
+      const locationDiv = dom.querySelector('.location-display');
+      expect(locationDiv).toBeFalsy();
     });
   });
 

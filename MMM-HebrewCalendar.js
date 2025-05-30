@@ -500,7 +500,7 @@ Module.register("MMM-HebrewCalendar", {
 					if (isParasha) {
 						event.title = `📜 ${event.title}`; // Torah scroll for PARASHA - always show
 					} else if (isCandleLighting) {
-						event.title = `👰‍♀️${event.title}`; // Bride for candle lighting (הדלקת נרות) - always show
+						event.title = `${event.title}`; // candle lighting (הדלקת נרות) - always show
 					} else if (isHavdalah) {
 						event.title = `✨ ${event.title}`; // Candle for havdalah (הבדלה) - always show
 					} else if (self.config.displaySymbol) {
@@ -566,6 +566,11 @@ Module.register("MMM-HebrewCalendar", {
 	getDom: function () {
 		const self = this;
 		const now = new Date();
+		
+		// Create main wrapper container
+		const wrapper = el("div", { className: "mmm-hebrew-calendar-wrapper" });
+		
+		// Create calendar table
 		const table = el("table", { className: "small wrapper" });
 
 		const days = this.getDaysOfWeek();
@@ -578,7 +583,20 @@ Module.register("MMM-HebrewCalendar", {
 		this.addTableRows(table, dateCells, cellIndex, monthDays, now, hebDayArray);
 
 		this.addCalendarEvents(dateCells, now);
-		return table;
+		
+		// Add calendar table to wrapper
+		wrapper.appendChild(table);
+		
+		// Add location display below the calendar
+		if (this.config.location && this.config.location.name) {
+			const locationDiv = el("div", { 
+				className: "location-display",
+				innerHTML: "Zmanim for " + this.config.location.name
+			});
+			wrapper.appendChild(locationDiv);
+		}
+		
+		return wrapper;
 	},
 
 	getDaysOfWeek: function () {
