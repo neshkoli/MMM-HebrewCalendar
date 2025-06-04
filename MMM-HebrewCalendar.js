@@ -158,6 +158,7 @@ Module.register("MMM-HebrewCalendar", {
 		wrapTitles: true,
 		hideCalendars: [],
 		hebrewEvents: [],
+		showBottomText: true, // Show location and IP information at the bottom
 		// Location configuration (defaults to Tel Aviv, Israel)
 		location: {
 			latitude: 32.0853,
@@ -345,6 +346,7 @@ Module.register("MMM-HebrewCalendar", {
 		self.displayedEvents = [];
 		self.updateTimer = null;
 		self.skippedUpdateCount = 0;
+		self.userIpAddress = null;
 
 		// Initialize hebrewEvents from config
 		self.hebrewEvents = {};
@@ -365,6 +367,17 @@ Module.register("MMM-HebrewCalendar", {
 
 		// 2. Add Jewish holidays for the current month using hebcal
 		self.addJewishHolidays();
+
+		// 3. Fetch user's IP address if showBottomText is enabled
+		if (self.config.showBottomText) {
+			console.log("DEBUG: showBottomText is enabled, calling fetchUserIpAddress...");
+			self.userIpAddress = 'Fetching...'; // Set initial state
+			// Send debug message to node_helper
+			self.sendSocketNotification('DEBUG_MESSAGE', 'Starting IP fetch from client');
+			self.fetchUserIpAddress();
+		} else {
+			console.log("DEBUG: showBottomText is disabled");
+		}
 
 		console.log("MMM-HebrewCalendar module started.");
 
@@ -388,6 +401,68 @@ Module.register("MMM-HebrewCalendar", {
 			month, 
 			location: self.config.location 
 		});
+	},
+
+	// 4. Add method to fetch user's IP address
+	fetchUserIpAddress: function () {
+		const self = this;
+		
+		console.log('DEBUG: fetchUserIpAddress called');
+		console.log('DEBUG: Starting to fetch user IP address...');
+		
+		// Send debug message to node_helper
+		self.sendSocketNotification('DEBUG_MESSAGE', 'fetchUserIpAddress function called');
+		
+		// List of IP services to try in order
+		const ipServices = [
+			'https://api.ipify.org?format=json',
+			'https://httpbin.org/ip',
+			'https://ifconfig.me/ip',
+			'http://ip-api.com/json'
+		];
+		
+		// Try each service until one works
+		let serviceIndex = 0;
+		
+		const tryNextService = () => {
+			if (serviceIndex >= ipServices.length) {
+				console.log('All browser-based IP services failed, trying node_helper fallback...');
+				// Use node_helper as fallback when all browser services fail
+				self.sendSocketNotification('GET_IP_ADDRESS');
+				return;
+			}
+			
+			const serviceUrl = ipServices[serviceIndex];
+			console.log(`Trying IP service ${serviceIndex + 1}/${ipServices.length}: ${serviceUrl}`);
+			
+			fetch(serviceUrl)
+				.then(response => {
+					console.log(`Response from ${serviceUrl}:`, response.status, response.statusText);
+					if (!response.ok) {
+						throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+					}
+					return response.json();
+				})
+				.then(data => {
+					console.log(`Data received from ${serviceUrl}:`, data);
+					// Different services return IP in different formats
+					const ip = data.ip || data.origin || data.trim();
+					if (ip) {
+						self.userIpAddress = ip;
+						console.log('Successfully retrieved user IP address:', self.userIpAddress);
+						self.updateDom();
+					} else {
+						throw new Error('No IP address found in response');
+					}
+				})
+				.catch(error => {
+					console.error(`Failed to fetch IP from ${serviceUrl}:`, error.message);
+					serviceIndex++;
+					setTimeout(tryNextService, 1000); // Wait 1 second before trying next service
+				});
+		};
+		
+		tryNextService();
 	},
 
 	notificationReceived: function (notification, payload, sender) {
@@ -521,6 +596,14 @@ Module.register("MMM-HebrewCalendar", {
 			}
 			self.sourceEvents["jewishHolidays"] = [];
 			self.processEvents();
+		} else if (notification === "IP_ADDRESS_RESULT") {
+			console.log("IP address received from node_helper:", payload);
+			self.userIpAddress = payload;
+			self.updateDom();
+		} else if (notification === "IP_ADDRESS_ERROR") {
+			console.error("Error fetching IP address from node_helper:", payload);
+			self.userIpAddress = 'Unknown';
+			self.updateDom();
 		}
 	},
 
@@ -587,13 +670,40 @@ Module.register("MMM-HebrewCalendar", {
 		// Add calendar table to wrapper
 		wrapper.appendChild(table);
 		
-		// Add location display below the calendar
-		if (this.config.location && this.config.location.name) {
-			const locationDiv = el("div", { 
-				className: "location-display",
+		// Add location and IP display below the calendar (if enabled)
+		if (this.config.showBottomText && this.config.location && this.config.location.name) {
+			// Create a flex container for location and IP display
+			const locationContainer = el("div", { className: "location-display-container" });
+			
+			// Left side: Zmanim text
+			const locationText = el("div", { 
+				className: "location-text",
 				innerHTML: "Zmanim for " + this.config.location.name
 			});
-			wrapper.appendChild(locationDiv);
+			
+			// Right side: IP address
+			let ipText = "";
+			if (this.userIpAddress) {
+				ipText = "IP: " + this.userIpAddress;
+			} else {
+				ipText = "IP: " + (this.userIpAddress === null ? "Not fetched" : "Loading...");
+			}
+			
+			const ipDiv = el("div", { 
+				className: "ip-display",
+				innerHTML: ipText
+			});
+			
+			locationContainer.appendChild(locationText);
+			locationContainer.appendChild(ipDiv);
+			wrapper.appendChild(locationContainer);
+		} else {
+			// Add debug info when showBottomText is disabled
+			const debugDiv = el("div", { 
+				className: "location-display",
+				innerHTML: "DEBUG: showBottomText=" + this.config.showBottomText + ", location=" + (this.config.location ? this.config.location.name : "undefined")
+			});
+			wrapper.appendChild(debugDiv);
 		}
 		
 		return wrapper;

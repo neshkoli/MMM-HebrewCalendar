@@ -51,10 +51,36 @@ global.Log = {
 // Mock moment for consistent date testing
 global.moment = require('moment-timezone');
 
+// Mock fetch for IP address functionality
+global.fetch = jest.fn().mockImplementation(() =>
+  Promise.resolve({
+    ok: true,
+    json: () => Promise.resolve({ ip: '192.168.1.100' })
+  })
+);
+
 // Helper to reset all mocks
 global.resetAllMocks = () => {
   jest.clearAllMocks();
   global.Module._testModule = null;
+  // Reset fetch mock to default behavior
+  if (global.fetch && typeof global.fetch.mockClear === 'function') {
+    global.fetch.mockClear();
+    global.fetch.mockImplementation(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ ip: '192.168.1.100' })
+      })
+    );
+  } else {
+    // Reinitialize fetch mock if it's missing mock functions
+    global.fetch = jest.fn().mockImplementation(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ ip: '192.168.1.100' })
+      })
+    );
+  }
 };
 
 // Helper to create DOM element (matching module's el function)

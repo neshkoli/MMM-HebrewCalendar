@@ -188,13 +188,32 @@
 /* Location display styling */
 .MMM-HebrewCalendar .location-display {
   text-align: left;
-  margin-top: 0px;
-  padding: 0px 0px;
   font-size: 0.7em;
-  color: rgba(255, 255, 255, 0.8);
-  background-color: rgba(0, 0, 0, 0.3);
-  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.9);
   font-style: italic;
+}
+
+/* Location display container with flex layout */
+.MMM-HebrewCalendar .location-display-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  font-size: 0.7em;
+  color: rgba(255, 255, 255, 0.9);
+  font-style: italic;
+}
+
+/* Left side - location text */
+.MMM-HebrewCalendar .location-text {
+  text-align: left;
+  flex: 1;
+}
+
+/* Right side - IP address */
+.MMM-HebrewCalendar .ip-display {
+  text-align: right;
+  flex-shrink: 0;
 }
 
 /* Main wrapper for the calendar and location */

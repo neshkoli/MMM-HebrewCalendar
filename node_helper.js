@@ -62,6 +62,7 @@ module.exports = NodeHelper.create({
 
   socketNotificationReceived: function (notification, payload) {
     console.log('MMM-HebrewCalendar node_helper received:', notification, payload);
+    
     if (notification === 'GET_JEWISH_HOLIDAYS') {
       if (!HebcalCore && !Hebcal) {
         console.error('Cannot fetch holidays: no hebcal library available');
@@ -275,6 +276,83 @@ module.exports = NodeHelper.create({
         console.error('Error processing Jewish holidays:', err);
         this.sendSocketNotification('JEWISH_HOLIDAYS_ERROR', err.message);
       }
+    } else if (notification === 'GET_IP_ADDRESS') {
+      // Fallback IP fetching using Node.js
+      this.fetchIpAddressFromNode();
+    } else if (notification === 'DEBUG_MESSAGE') {
+      console.log('[DEBUG]', payload);
     }
+  },
+
+  fetchIpAddressFromNode: function() {
+    const https = require('https');
+    const http = require('http');
+    
+    console.log('Fetching IP address from node_helper...');
+    
+    // Try HTTPS first, then HTTP if it fails
+    const tryHttps = () => {
+      const req = https.get('https://api.ipify.org?format=json', (res) => {
+        let data = '';
+        res.on('data', (chunk) => data += chunk);
+        res.on('end', () => {
+          try {
+            const parsed = JSON.parse(data);
+            console.log('Successfully retrieved IP via node_helper:', parsed.ip);
+            this.sendSocketNotification('IP_ADDRESS_RESULT', parsed.ip);
+          } catch (e) {
+            console.error('Failed to parse IP response:', e);
+            tryHttp();
+          }
+        });
+      });
+      
+      req.on('error', (err) => {
+        console.error('HTTPS IP fetch failed:', err.message);
+        tryHttp();
+      });
+      
+      req.setTimeout(5000, () => {
+        req.destroy();
+        console.error('HTTPS IP fetch timeout');
+        tryHttp();
+      });
+    };
+    
+    const tryHttp = () => {
+      const req = http.get('http://ip-api.com/json', (res) => {
+        let data = '';
+        res.on('data', (chunk) => data += chunk);
+        res.on('end', () => {
+          try {
+            const parsed = JSON.parse(data);
+            const ip = parsed.query || parsed.ip;
+            if (ip) {
+              console.log('Successfully retrieved IP via HTTP node_helper:', ip);
+              this.sendSocketNotification('IP_ADDRESS_RESULT', ip);
+            } else {
+              console.error('No IP found in HTTP response');
+              this.sendSocketNotification('IP_ADDRESS_ERROR', 'No IP found');
+            }
+          } catch (e) {
+            console.error('Failed to parse HTTP IP response:', e);
+            this.sendSocketNotification('IP_ADDRESS_ERROR', 'Parse error');
+          }
+        });
+      });
+      
+      req.on('error', (err) => {
+        console.error('HTTP IP fetch failed:', err.message);
+        this.sendSocketNotification('IP_ADDRESS_ERROR', err.message);
+      });
+      
+      req.setTimeout(5000, () => {
+        req.destroy();
+        console.error('HTTP IP fetch timeout');
+        this.sendSocketNotification('IP_ADDRESS_ERROR', 'Timeout');
+      });
+    };
+    
+    tryHttps();
   }
 });

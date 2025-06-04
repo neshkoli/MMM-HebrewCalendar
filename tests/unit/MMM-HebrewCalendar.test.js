@@ -23,6 +23,15 @@ describe('MMM-HebrewCalendar Module', () => {
           warn: function() {},
           error: function() {}
         };
+        // Mock fetch in the JSDOM environment
+        var fetch = function(url) {
+          return Promise.resolve({
+            ok: true,
+            json: function() {
+              return Promise.resolve({ ip: '192.168.1.100' });
+            }
+          });
+        };
       </script>
       <script src="file://${modulePath}"></script>
     `, { 
@@ -36,6 +45,8 @@ describe('MMM-HebrewCalendar Module', () => {
         moduleDefinition = dom.window.Module._registeredModule;
         global.window = dom.window;
         global.document = dom.window.document;
+        // Ensure fetch is available in the global scope
+        global.fetch = dom.window.fetch;
         resolve();
       };
     });
@@ -264,7 +275,7 @@ describe('MMM-HebrewCalendar Module', () => {
       // Should contain location display
       const locationDiv = dom.querySelector('.location-display');
       expect(locationDiv).toBeTruthy();
-      expect(locationDiv.innerHTML).toBe('Test Location');
+      expect(locationDiv.innerHTML).toBe('Zmanim for Test Location');
     });
 
     it('should not display location when not configured', () => {
@@ -278,6 +289,43 @@ describe('MMM-HebrewCalendar Module', () => {
       // Should not contain location display
       const locationDiv = dom.querySelector('.location-display');
       expect(locationDiv).toBeFalsy();
+    });
+
+    it('should not display location when showBottomText is false', () => {
+      module.config = { 
+        ...testData.defaultConfig,
+        showBottomText: false,
+        location: {
+          name: "Test Location",
+          latitude: 40.7128,
+          longitude: -74.0060
+        }
+      };
+      
+      const dom = module.getDom();
+      
+      // Should not contain location display when showBottomText is disabled
+      const locationDiv = dom.querySelector('.location-display');
+      expect(locationDiv).toBeFalsy();
+    });
+
+    it('should display IP address when available', () => {
+      module.config = { 
+        ...testData.defaultConfig,
+        location: {
+          name: "Test Location",
+          latitude: 40.7128,
+          longitude: -74.0060
+        }
+      };
+      module.userIpAddress = "192.168.1.100";
+      
+      const dom = module.getDom();
+      
+      // Should contain location and IP display
+      const locationDiv = dom.querySelector('.location-display');
+      expect(locationDiv).toBeTruthy();
+      expect(locationDiv.innerHTML).toBe('Zmanim for Test Location • IP: 192.168.1.100');
     });
   });
 

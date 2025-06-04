@@ -43,6 +43,7 @@ module.exports = {
     wrapTitles: true,
     hideCalendars: [],
     hebrewEvents: [],
+    showBottomText: true, // Show location and IP information at the bottom
     // Location configuration (defaults to Tel Aviv, Israel)
     location: {
       latitude: 32.0853,
