@@ -9,6 +9,8 @@ describe('MMM-HebrewCalendar Module', () => {
   beforeAll(() => {
     // Load the module file in JSDOM environment
     const modulePath = path.join(__dirname, '../../MMM-HebrewCalendar.js');
+    const utilsPath = path.join(__dirname, '../../calendar-utils.js');
+    const ipUtilsPath = path.join(__dirname, '../../ip-utils.js');
     const dom = new JSDOM(`
       <script>
         var Module = {
@@ -33,6 +35,8 @@ describe('MMM-HebrewCalendar Module', () => {
           });
         };
       </script>
+      <script src="file://${utilsPath}"></script>
+      <script src="file://${ipUtilsPath}"></script>
       <script src="file://${modulePath}"></script>
     `, { 
       runScripts: "dangerously",
@@ -272,10 +276,13 @@ describe('MMM-HebrewCalendar Module', () => {
       
       const dom = module.getDom();
       
-      // Should contain location display
-      const locationDiv = dom.querySelector('.location-display');
-      expect(locationDiv).toBeTruthy();
-      expect(locationDiv.innerHTML).toBe('Zmanim for Test Location');
+      // Should contain location display container with location text
+      const locationContainer = dom.querySelector('.location-display-container');
+      expect(locationContainer).toBeTruthy();
+      
+      const locationText = locationContainer.querySelector('.location-text');
+      expect(locationText).toBeTruthy();
+      expect(locationText.innerHTML).toBe('Zmanim for Test Location');
     });
 
     it('should not display location when not configured', () => {
@@ -286,9 +293,9 @@ describe('MMM-HebrewCalendar Module', () => {
       
       const dom = module.getDom();
       
-      // Should not contain location display
-      const locationDiv = dom.querySelector('.location-display');
-      expect(locationDiv).toBeFalsy();
+      // Should not contain location display container
+      const locationContainer = dom.querySelector('.location-display-container');
+      expect(locationContainer).toBeFalsy();
     });
 
     it('should not display location when showBottomText is false', () => {
@@ -304,9 +311,9 @@ describe('MMM-HebrewCalendar Module', () => {
       
       const dom = module.getDom();
       
-      // Should not contain location display when showBottomText is disabled
-      const locationDiv = dom.querySelector('.location-display');
-      expect(locationDiv).toBeFalsy();
+      // Should not contain location display container when showBottomText is disabled
+      const locationContainer = dom.querySelector('.location-display-container');
+      expect(locationContainer).toBeFalsy();
     });
 
     it('should display IP address when available', () => {
@@ -323,9 +330,16 @@ describe('MMM-HebrewCalendar Module', () => {
       const dom = module.getDom();
       
       // Should contain location and IP display
-      const locationDiv = dom.querySelector('.location-display');
-      expect(locationDiv).toBeTruthy();
-      expect(locationDiv.innerHTML).toBe('Zmanim for Test Location • IP: 192.168.1.100');
+      const locationContainer = dom.querySelector('.location-display-container');
+      expect(locationContainer).toBeTruthy();
+      
+      const locationText = locationContainer.querySelector('.location-text');
+      expect(locationText).toBeTruthy();
+      expect(locationText.innerHTML).toBe('Zmanim for Test Location');
+      
+      const ipDisplay = locationContainer.querySelector('.ip-display');
+      expect(ipDisplay).toBeTruthy();
+      expect(ipDisplay.innerHTML).toBe('IP: 192.168.1.100');
     });
   });
 

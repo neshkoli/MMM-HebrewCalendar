@@ -5,6 +5,14 @@ const { JSDOM } = require('jsdom');
 
 describe('MMM-HebrewCalendar Utility Functions', () => {
   let utilityFunctions;  beforeAll(async () => {
+    // Load the calendar utilities first
+    const utilsPath = path.join(__dirname, '../../calendar-utils.js');
+    const utilsContent = fs.readFileSync(utilsPath, 'utf8');
+    
+    // Load the IP utilities
+    const ipUtilsPath = path.join(__dirname, '../../ip-utils.js');
+    const ipUtilsContent = fs.readFileSync(ipUtilsPath, 'utf8');
+    
     // Load the module file to access utility functions
     const modulePath = path.join(__dirname, '../../MMM-HebrewCalendar.js');
     const moduleContent = fs.readFileSync(modulePath, 'utf8');
@@ -30,10 +38,20 @@ describe('MMM-HebrewCalendar Utility Functions', () => {
       error: function() {}
     };
     
-    // Execute the module content in the window context
-    const script = dom.window.document.createElement('script');
-    script.text = moduleContent;
-    dom.window.document.head.appendChild(script);
+    // Load utilities first
+    const utilsScript = dom.window.document.createElement('script');
+    utilsScript.text = utilsContent;
+    dom.window.document.head.appendChild(utilsScript);
+    
+    // Load IP utilities
+    const ipUtilsScript = dom.window.document.createElement('script');
+    ipUtilsScript.text = ipUtilsContent;
+    dom.window.document.head.appendChild(ipUtilsScript);
+    
+    // Then load the main module
+    const moduleScript = dom.window.document.createElement('script');
+    moduleScript.text = moduleContent;
+    dom.window.document.head.appendChild(moduleScript);
     
     global.window = dom.window;
     global.document = dom.window.document;

@@ -277,8 +277,11 @@ module.exports = NodeHelper.create({
         this.sendSocketNotification('JEWISH_HOLIDAYS_ERROR', err.message);
       }
     } else if (notification === 'GET_IP_ADDRESS') {
-      // Fallback IP fetching using Node.js
+      // Fallback IP fetching using Node.js (external IP)
       this.fetchIpAddressFromNode();
+    } else if (notification === 'GET_INTERNAL_IP_ADDRESS') {
+      // Internal IP fetching using Node.js
+      this.fetchInternalIpAddressFromNode();
     } else if (notification === 'DEBUG_MESSAGE') {
       console.log('[DEBUG]', payload);
     }
@@ -354,5 +357,64 @@ module.exports = NodeHelper.create({
     };
     
     tryHttps();
+  },
+
+  fetchInternalIpAddressFromNode: function() {
+    const os = require('os');
+    
+    console.log('Fetching internal IP address from node_helper...');
+    
+    try {
+      const networkInterfaces = os.networkInterfaces();
+      let internalIp = null;
+      
+      // Look through all network interfaces
+      for (const interfaceName in networkInterfaces) {
+        const interfaces = networkInterfaces[interfaceName];
+        
+        for (const interface of interfaces) {
+          // Skip loopback and non-IPv4 addresses
+          if (interface.family === 'IPv4' && !interface.internal) {
+            // Check if it's a private IP address
+            if (this.isPrivateIP(interface.address)) {
+              internalIp = interface.address;
+              break;
+            }
+          }
+        }
+        
+        if (internalIp) break;
+      }
+      
+      if (internalIp) {
+        console.log('Successfully retrieved internal IP via node_helper:', internalIp);
+        this.sendSocketNotification('INTERNAL_IP_ADDRESS_RESULT', internalIp);
+      } else {
+        console.error('No internal IP address found');
+        this.sendSocketNotification('INTERNAL_IP_ADDRESS_ERROR', 'No internal IP found');
+      }
+    } catch (error) {
+      console.error('Error fetching internal IP:', error.message);
+      this.sendSocketNotification('INTERNAL_IP_ADDRESS_ERROR', error.message);
+    }
+  },
+
+  isPrivateIP: function(ip) {
+    const parts = ip.split('.').map(Number);
+    
+    // Check for private IP ranges:
+    // 10.0.0.0 - 10.255.255.255
+    if (parts[0] === 10) return true;
+    
+    // 172.16.0.0 - 172.31.255.255
+    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
+    
+    // 192.168.0.0 - 192.168.255.255
+    if (parts[0] === 192 && parts[1] === 168) return true;
+    
+    // 169.254.0.0 - 169.254.255.255 (link-local)
+    if (parts[0] === 169 && parts[1] === 254) return true;
+    
+    return false;
   }
 });
