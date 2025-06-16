@@ -214,6 +214,7 @@
 .MMM-HebrewCalendar .ip-display {
   text-align: right;
   flex-shrink: 0;
+  padding: 0 10px;
 }
 
 /* Main wrapper for the calendar and location */

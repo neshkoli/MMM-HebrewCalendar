@@ -127,47 +127,6 @@ Module.register("MMM-HebrewCalendar", {
 	},
 
 	/**
-	 * Gets the Hebrew day number for a given date or object
-	 * @param {Date|Object} date - Date or object with dd/hebrewDay property
-	 * @returns {number} Hebrew day as number
-	 */
-	getHebDayNumber: function (date) {
-		if (date && typeof date === 'object') {
-			// Handle both old format (dd) and new format (hebrewDay)
-			const dayValue = date.dd || date.hebrewDay;
-			if (dayValue) {
-				return parseInt(dayValue);
-			}
-		}
-		const dayStr = getHebrewDatePart(date, "day", "en");
-		return parseInt(dayStr);
-	},
-
-	/**
-	 * Gets the Hebrew month number for a given date or object
-	 * @param {Date|Object} date - Date or object with mm/hebrewMonth property
-	 * @returns {number} Hebrew month as number
-	 */
-	getHebMonthNumber: function (date) {
-		if (date && typeof date === 'object') {
-			// Handle both old format (mm) and new format (hebrewMonth)
-			const monthValue = date.mm || date.hebrewMonth;
-			if (monthValue) {
-				const monthNames = {
-					// English month names
-					'Tishrei': 1, 'Cheshvan': 2, 'Kislev': 3, 'Tevet': 4, 'Shevat': 5, 'Adar': 6,
-					'Nisan': 7, 'Iyyar': 8, 'Sivan': 9, 'Tammuz': 10, 'Av': 11, 'Elul': 12,
-					// Hebrew month names
-					'תשרי': 1, 'חשוון': 2, 'כסלו': 3, 'טבת': 4, 'שבט': 5, 'אדר': 6,
-					'ניסן': 7, 'אייר': 8, 'סיוון': 9, 'תמוז': 10, 'אב': 11, 'אלול': 12
-				};
-				return monthNames[monthValue] || 0;
-			}
-		}
-		return Number(getHebrewDatePart(date, "month", "en"));
-	},
-
-	/**
 	 * Classifies a holiday title and returns the appropriate CSS class
 	 * @param {string} title - Holiday title in Hebrew or English
 	 * @returns {string} CSS class for the holiday type
@@ -296,8 +255,8 @@ Module.register("MMM-HebrewCalendar", {
 				const hasNewFormat = event.hebrewMonth && event.hebrewDay && event.name;
 				
 				if (hasOldFormat || hasNewFormat) {
-					const month = self.getHebMonthNumber(event);
-					const day = self.getHebDayNumber(event);
+					const month = getHebMonthNumber(event); // Changed from self.getHebMonthNumber
+					const day = getHebDayNumber(event); // Changed from self.getHebDayNumber
 					const text = event.text || event.name;
 					self.addHebrewEvent(month, day, text, event.type || 'custom');
 				}
@@ -564,11 +523,11 @@ Module.register("MMM-HebrewCalendar", {
 		// Create calendar table
 		const table = el("table", { className: "small wrapper" });
 
-		const days = this.getDaysOfWeek();
-		const hebDayArray = this.getHebDayArray();
+		const days = getDaysOfWeek(); // Changed from this.getDaysOfWeek()
+		const hebDayArray = getHebDayArray(); // Changed from this.getHebDayArray()
 		const dateCells = [];
-		let cellIndex = this.calculateStartCellIndex(now, days);
-		const monthDays = this.calculateMonthDays(now, cellIndex);
+		let cellIndex = this.calculateStartCellIndex(now, days); // Stays as this.calculateStartCellIndex
+		const monthDays = calculateMonthDays(now, cellIndex, this.config); // Changed from this.calculateMonthDays and added this.config
 
 		this.addTableHeaders(table, days, cellIndex, now);
 		this.addTableRows(table, dateCells, cellIndex, monthDays, now, hebDayArray);
@@ -614,17 +573,6 @@ Module.register("MMM-HebrewCalendar", {
 		return wrapper;
 	},
 
-	getDaysOfWeek: function () {
-		return ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-	},
-
-	getHebDayArray: function () {
-		return [
-			"", "א׳", "ב׳", "ג׳", "ד׳", "ה׳", "ו׳", "ֿז׳", "ח׳", "ט׳", "י׳", 'י"א', 'י"ב', 'י"ג', 'י"ד', 'ט"ו', 'ט"ז',
-			'י"ז', 'י"ח', 'י"ט', "כ׳", 'כ"א', 'כ"ב', 'כ"ג', 'כ"ד', 'כ"ה', 'כ"ו', 'כ"ז', 'כ"ח', 'כ"ט', "ל׳"
-		];
-	},
-
 	calculateStartCellIndex: function (now, days) {
 		let firstDayOfWeek = this.config.firstDayOfWeek.toLowerCase();
 		let startDayOffset = 0;
@@ -640,26 +588,6 @@ Module.register("MMM-HebrewCalendar", {
 
 		startDayOffset = startDayOffset % 7;
 		return now.getDate() - now.getDay() + startDayOffset;
-	},
-
-	calculateMonthDays: function (now, cellIndex) {
-		const mode = this.config.mode.toLowerCase();
-		const weeksToMonthDays = { nextoneweek: 0, currentweek: 0, oneweek: 0, twoweeks: 7, threeweeks: 14, fourweeks: 21, nextfourweeks: 21 };
-
-		if (mode in weeksToMonthDays) {
-			while (cellIndex > now.getDate()) {
-				cellIndex -= 7;
-			}
-			return cellIndex + weeksToMonthDays[mode];
-		} else {
-			if (mode === "lastmonth") {
-				now.setMonth(now.getMonth() - 1);
-			} else if (mode === "nextmonth") {
-				now.setMonth(now.getMonth() + 1);
-			}
-			cellIndex = 1 - new Date(now.getFullYear(), now.getMonth(), 1).getDay();
-			return 32 - new Date(now.getFullYear(), now.getMonth(), 32).getDate();
-		}
 	},
 
 	addTableHeaders: function (table, days, cellIndex, now) {

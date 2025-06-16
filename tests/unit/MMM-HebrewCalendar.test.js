@@ -5,6 +5,7 @@ const testData = require('../fixtures/test-data');
 
 describe('MMM-HebrewCalendar Module', () => {
   let moduleDefinition;
+  let utilityFunctions;
 
   beforeAll(() => {
     // Load the module file in JSDOM environment
@@ -51,6 +52,16 @@ describe('MMM-HebrewCalendar Module', () => {
         global.document = dom.window.document;
         // Ensure fetch is available in the global scope
         global.fetch = dom.window.fetch;
+        
+        // Extract utility functions from window
+        utilityFunctions = {
+          getHebDayNumber: dom.window.getHebDayNumber,
+          getHebMonthNumber: dom.window.getHebMonthNumber,
+          getDaysOfWeek: dom.window.getDaysOfWeek,
+          getHebDayArray: dom.window.getHebDayArray,
+          calculateMonthDays: dom.window.calculateMonthDays
+        };
+        
         resolve();
       };
     });
@@ -167,7 +178,7 @@ describe('MMM-HebrewCalendar Module', () => {
         yyyy: 5784
       };
       
-      expect(module.getHebDayNumber(mockDate)).toBe(15);
+      expect(utilityFunctions.getHebDayNumber(mockDate)).toBe(15);
     });
 
     it('should get Hebrew month number correctly', () => {
@@ -187,13 +198,13 @@ describe('MMM-HebrewCalendar Module', () => {
       ];
 
       testCases.forEach(({ input, expected }) => {
-        expect(module.getHebMonthNumber(input)).toBe(expected);
+        expect(utilityFunctions.getHebMonthNumber(input)).toBe(expected);
       });
     });
 
     it('should handle unknown Hebrew month names', () => {
       const mockDate = { mm: 'UnknownMonth' };
-      expect(module.getHebMonthNumber(mockDate)).toBe(0);
+      expect(utilityFunctions.getHebMonthNumber(mockDate)).toBe(0);
     });
 
     it('should filter events by date correctly', () => {
