@@ -89,6 +89,9 @@ You may also want to set `"broadcastPastEvents": true` in your [calendar module 
 | `wrapTitles`        | `true`            | Allow event titles to wrap or truncate.                                                          |
 | `hebrewEvents`      | `[]`              | Array of objects: `{ name: "Name", hebrewMonth: "MonthName", hebrewDay: DayNumber, type: "birthday"|"anniversary"|"memorial"|"other" }`             |
 | `location`          | Tel Aviv, Israel  | Location for Jewish holidays and candle lighting times. See [Location Configuration](#location-configuration) below. |
+| `noModern`          | `false`           | Set to `true` to hide modern Israeli holidays (Ben Gurion Day, Sigd, Yom HaAtzmaut, etc.)       |
+| `noMinorFast`       | `false`           | Set to `true` to hide minor fast days.                                                           |
+| `noRoshChodesh`     | `false`           | Set to `true` to hide Rosh Chodesh (new month) events.                                          |
 
 ### Location Configuration
 
@@ -183,6 +186,46 @@ hebrewEvents: [
 - סיוון (Sivan), תמוז (Tammuz), אב (Av), אלול (Elul)
 
 **Note:** Both Hebrew names (e.g., "סיוון") and English names (e.g., "Sivan") are supported for backward compatibility.
+
+### Filtering Jewish Holidays
+
+You can filter out certain types of Jewish holidays and events:
+
+```javascript
+{
+  module: "MMM-HebrewCalendar",
+  position: "bottom_bar",
+  config: {
+    mode: "fourWeeks",
+    noModern: true,        // Hide modern Israeli holidays (Ben Gurion Day, Sigd, Yom HaAtzmaut, etc.)
+    noMinorFast: false,    // Set to true to hide minor fast days
+    noRoshChodesh: false,  // Set to true to hide Rosh Chodesh
+    location: {
+      latitude: 32.0853,
+      longitude: 34.7818,
+      name: "Tel Aviv",
+      countryCode: "IL",
+      timezone: "Asia/Jerusalem",
+      israelObservance: true
+    }
+  }
+}
+```
+
+**Modern holidays that can be hidden with `noModern: true`:**
+- יום השואה (Yom HaShoah - Holocaust Remembrance Day)
+- יום הזיכרון (Yom HaZikaron - Memorial Day)
+- יום העצמאות (Yom HaAtzmaut - Independence Day)
+- יום ירושלים (Yom Yerushalayim - Jerusalem Day)
+- יום בן גוריון (Ben Gurion Day)
+- סיגד (Sigd - Ethiopian Jewish holiday)
+- חג הבנות (Family Day)
+
+**Minor fasts that can be hidden with `noMinorFast: true`:**
+- צום גדליה (Fast of Gedaliah)
+- עשרה בטבת (Tenth of Tevet)
+- תענית אסתר (Fast of Esther)
+- י"ז בתמוז (Seventeenth of Tammuz)
 
 ## Notes
 

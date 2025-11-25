@@ -95,6 +95,10 @@ Module.register("MMM-HebrewCalendar", {
 		hideCalendars: [],
 		hebrewEvents: [],
 		showBottomText: true, // Show location and IP information at the bottom
+		// Hebcal filtering options
+		noModern: false,        // Set to true to hide modern Israeli holidays (Ben Gurion Day, Sigd, etc.)
+		noMinorFast: false,     // Set to true to hide minor fast days
+		noRoshChodesh: true,   // Set to true to hide Rosh Chodesh
 		// Location configuration (defaults to Tel Aviv, Israel)
 		location: {
 			latitude: 32.0853,
@@ -306,7 +310,10 @@ Module.register("MMM-HebrewCalendar", {
 		self.sendSocketNotification('GET_JEWISH_HOLIDAYS', { 
 			year, 
 			month, 
-			location: self.config.location 
+			location: self.config.location,
+			noModern: self.config.noModern,
+			noMinorFast: self.config.noMinorFast,
+			noRoshChodesh: self.config.noRoshChodesh
 		});
 	},
 

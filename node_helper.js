@@ -70,8 +70,9 @@ module.exports = NodeHelper.create({
       }
       
       try {
-        const { year, month, location: configLocation } = payload;
+        const { year, month, location: configLocation, noModern, noMinorFast, noRoshChodesh } = payload;
         console.log(`Fetching Jewish holidays (major holidays only, Hebrew) for ${year}/${month} and next month`);
+        console.log(`Filtering options: noModern=${noModern}, noMinorFast=${noMinorFast}, noRoshChodesh=${noRoshChodesh}`);
         
         // Create location object from config or use default
         let currentLocation;
@@ -120,7 +121,11 @@ module.exports = NodeHelper.create({
               sedrot: true,            // Enable PARASHA (Torah portions)
               omer: false,
               locale: 'he',            // Hebrew locale
-              il: configLocation ? configLocation.israelObservance : true // Use config or default to Israel observance
+              il: configLocation ? configLocation.israelObservance : true, // Use config or default to Israel observance
+              noModern: noModern || false,           // Filter modern holidays if requested
+              noMinorFast: noMinorFast || false,     // Filter minor fasts if requested
+              noRoshChodesh: noRoshChodesh || false, // Filter Rosh Chodesh if requested
+              noSpecialShabbat: true                  // Suppress Special Shabbat (may help with some minor events)
             };
 
             const monthlyEvents = HebcalCore.HebrewCalendar.calendar(monthlyOptions);
@@ -130,6 +135,18 @@ module.exports = NodeHelper.create({
               const date = event.getDate().greg();
               const categories = event.getCategories();
               const desc = event.getDesc();
+              const hebrewTitle = event.render('he');
+              
+              // Skip "חג הבנות" (Chag HaBanot/Girls Holiday) if noRoshChodesh is enabled
+              // This is a Rosh Chodesh related celebration observed primarily in Sephardic communities
+              if (noRoshChodesh && (
+                hebrewTitle.includes('חג הבנות') ||
+                desc.includes('Chag HaBanot') ||
+                desc.includes('Girls')
+              )) {
+                console.log(`Skipping Chag HaBanot due to noRoshChodesh filter: ${hebrewTitle}`);
+                return; // Skip this event
+              }
               
               // Check if it's a major holiday
               const isMajorHoliday = categories.includes('major') || 
@@ -152,8 +169,7 @@ module.exports = NodeHelper.create({
                                desc.includes('הבדלה');
               
               if (isMajorHoliday) {
-                // Use Hebrew rendering for Hebrew title
-                const hebrewTitle = event.render('he');
+                // Use Hebrew rendering for Hebrew title (already obtained above)
                 
                 holidays.push({
                   title: hebrewTitle,
@@ -162,8 +178,7 @@ module.exports = NodeHelper.create({
                 });
                 console.log(`Found major holiday (Israel observance, Hebrew): ${date.toDateString()}: ${hebrewTitle}`);
               } else if (isParasha) {
-                // Use Hebrew rendering for PARASHA title
-                const hebrewTitle = event.render('he');
+                // Use Hebrew rendering for PARASHA title (already obtained above)
                 // Remove "פָּרָשַׁת" prefix (with vowel points) to keep only the Parasha name
                 const cleanTitle = hebrewTitle.replace(/^פָּרָשַׁת\s+/, '').replace(/^פרשת\s+/, '').replace(/^Parashat\s+/, '');
                 
@@ -174,8 +189,7 @@ module.exports = NodeHelper.create({
                 });
                 console.log(`Found PARASHA (Torah portion): ${date.toDateString()}: ${cleanTitle}`);
               } else if (isCandleLighting) {
-                // Handle candle lighting times
-                const hebrewTitle = event.render('he');
+                // Handle candle lighting times (hebrewTitle already obtained above)
                 // Extract just the Hebrew text without time (e.g., "הדלקת נרות" from "הדלקת נרות: 18:15")
                 const cleanTitle = hebrewTitle.split(':')[0].trim();
                 // Extract time from eventTime Date object
@@ -190,8 +204,7 @@ module.exports = NodeHelper.create({
                 });
                 console.log(`Found candle lighting: ${date.toDateString()}: ${cleanTitle} at ${timeString}`);
               } else if (isHavdalah) {
-                // Handle havdalah times
-                const hebrewTitle = event.render('he');
+                // Handle havdalah times (hebrewTitle already obtained above)
                 // Extract just the Hebrew text without time (e.g., "הַבְדָּלָה" from "הַבְדָּלָה: 20:34")
                 const cleanTitle = hebrewTitle.split(':')[0].trim();
                 // Extract time from eventTime Date object
