@@ -14,7 +14,7 @@
     "validate": "npm run test && npm run lint"
   },
   "dependencies": {
-    "@hebcal/core": "^5.9.8",
+    "@hebcal/core": "^6.0.0",
     "@hebcal/hdate": "^0.14.2",
     "hebcal": "^2.3.2",
     "moment": "^2.30.1"
