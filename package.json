@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@hebcal/core": "^5.9.8",
-    "@hebcal/hdate": "^0.14.2",
+    "@hebcal/hdate": "^0.22.0",
     "hebcal": "^2.3.2",
     "moment": "^2.30.1"
   },
